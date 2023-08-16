@@ -54,7 +54,7 @@ public class BookingSteps {
     public void theFirstnameIsAndTheLastnameIsAndTheTotalpriceIs(String firstname, String lastname, String totalPrice) {
         this.firstname = firstname;
         this.lastname = lastname;
-        this.totalprice = totalprice;
+        this.totalprice = Integer.parseInt(totalPrice);
     }
 
     @Given("the check-in is {string} and the check-out is {string}")
