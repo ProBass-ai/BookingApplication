@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
         features = "src/test/resources/features",
-        tags="@create-booking",
+        tags="@delete-booking",
         glue = "steps"
 )
 public class RunCucumberIT {

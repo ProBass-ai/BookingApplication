@@ -5,6 +5,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.RestAssured;
+import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
@@ -25,6 +26,8 @@ public class BookingSteps {
     private LocalDate checkin;
     private LocalDate checkout;
     private String additionalneeds;
+    private String token;
+    private Integer bookingId;
 
     @Given("the base uri is {string}")
     public void theBaseUrlIs(String baseUri){
@@ -47,6 +50,13 @@ public class BookingSteps {
                      "    </bookingdates>\n" +
                      "    <additionalneeds>" + additionalneeds + "</additionalneeds>\n" +
                      "  </booking>";
+    }
+
+    private String getAuthJsonBody(String username, String password){
+        return "{\n" +
+                "    \"username\": \"" + username + "\",\n" +
+                "    \"password\": \"" + password + "\"\n" +
+                "}";
     }
 
 
@@ -76,7 +86,7 @@ public class BookingSteps {
         requestBody = getRequestBody(firstname, lastname, totalprice, depositpaid, checkIn, checkOut, additionalneeds);
 
         request.body(requestBody);
-        request.contentType("application/xml");
+        request.contentType("text/xml");
         response = request.post();
     }
 
@@ -87,5 +97,49 @@ public class BookingSteps {
 
     @Then("the user booking details are correct")
     public void theUserBookingDetailsAreCorrect() {
+
+    }
+
+    @Given("the user has all bookings")
+    public void theUserHasAllBookings() {
+        theBaseUrlIs("https://restful-booker.herokuapp.com/booking");
+        request.contentType("application/json");
+        response = request.get();
+    }
+
+    @When("the user deletes booking {string}")
+    public void theUserDeletesBooking(String bookingIndex) {
+        bookingId = request.get().jsonPath().get("[" + (Integer.parseInt(bookingIndex) - 1) + "].bookingid");
+
+        theBaseUrlIs("https://restful-booker.herokuapp.com/booking/" + bookingId);
+        request.contentType("application/json");
+        request.header(new Header("Authorization", "Basic YWRtaW46cGFzc3dvcmQxMjM="));
+        response = request.delete();
+    }
+
+    @Then("the status code is {string}")
+    public void theStatusCodeIs(String statusCode) {
+        assertEquals(Integer.parseInt(statusCode), response.statusCode());
+    }
+
+    @Given("the user has basic authorization")
+    public void theUserHasBaseAuthorization() {
+        requestBody = getAuthJsonBody("admin", "password123");
+
+        theBaseUrlIs("https://restful-booker.herokuapp.com/auth");
+        request.body(requestBody);
+        request.contentType("application/json");
+        response = request.post();
+        token = response.jsonPath().get("token");
+    }
+
+    @Then("the booking is not in the database")
+    public void theBookingIsNotInTheDatabase() {
+
+        theBaseUrlIs("https://restful-booker.herokuapp.com/booking/" + bookingId);
+        request.contentType("application/json");
+        response = request.get();
+        theStatusCodeIs("404");
+
     }
 }

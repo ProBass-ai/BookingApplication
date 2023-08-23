@@ -9,7 +9,7 @@ Feature: REST - Create Booking Feature
     And the check-in is "<check-in>" and the check-out is "<checkout>"
     And the deposit paid is "<depositpaid>", and the additional needs are "<additionalneeds>"
     When the user creates the booking
-    Then the status code must be "status_code"
+    Then the status code must be "200"
     And the user booking details are correct
 
     Examples:
